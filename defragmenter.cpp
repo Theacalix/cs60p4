@@ -2,24 +2,24 @@
 #include "DefragRunner.h"
 #include "mynew.h"
 #include <cstdlib>
-//#include "linearProbing.h"
+#include "LinearProbing.h"
 
 Defragmenter::Defragmenter(DiskDrive *diskDrive)
 {
 	int arSize = 5000;
 	DiskBlock** diskArray = new DiskBlock*[arSize];
-	unsigned next;
+	int next;
 	int arIx = 0;
 	int diskIx = 2;
-	unsigned newNext;
-	unsigned prevNext;
-	LinearHashTable <int> yellowPages(200000);
+	int newNext;
+	int prevNext;
+	LinearHashTable <int> yellowPages(-1, 200000);
 
 	next = diskDrive->directory[0].getFirstBlockID(); //look for beginning of each file
 		
 	for(int i = 0; i < arSize && next != 1; i++) //loop through array and fill with ordered file
 	{
-		newNext = yellowpages.find(next);
+		newNext = yellowPages.find(next);
 		if(newNext == -1) { //element is in original pos
 			blockToAr(&diskArray, i, next, diskDrive);
 		}
@@ -28,7 +28,7 @@ Defragmenter::Defragmenter(DiskDrive *diskDrive)
 			while(newNext != -1) //check if moved multiple times
 			{
 				prevNext = newNext;
-				newNext = find(prevNext);
+				newNext = yellowPages.find(prevNext);
 			}
 			next = prevNext;
 			blockToAr(&diskArray, i, next, diskDrive);
@@ -41,7 +41,7 @@ Defragmenter::Defragmenter(DiskDrive *diskDrive)
 		while(next != 1) //move element to disk and grab next in file
 		{
 			//move next beginning element in file to diskdrive			 
-			arToBlock(diskArray, diskDrive, arIx, diskIx, yellowPages)
+			arToBlock(&diskArray, diskDrive, arIx, diskIx, yellowPages);
 		 
 			//move next end element in file to RAM
 			blockToAr(&diskArray, arIx, next, diskDrive);
@@ -62,14 +62,14 @@ Defragmenter::Defragmenter(DiskDrive *diskDrive)
 	for(int i = 0; i < arSize; i++)
 	{
 		int pos = (arIx + i) % arSize;
-		arToBlock(diskArray, diskDrive, pos, diskIx, yellowPages);
+		arToBlock(&diskArray, diskDrive, pos, diskIx, yellowPages);
 		diskIx++;
 	}
 
 } // Defragmenter()
 
 
-void Defragmenter::blockToAr(DiskBlock*** diskArray, int pos, unsigned &next, DiskDrive *diskDrive)
+void Defragmenter::blockToAr(DiskBlock*** diskArray, int pos, int &next, DiskDrive *diskDrive)
 {
 	DiskBlock* temp = diskDrive->readDiskBlock(next);
 	(*diskArray)[pos] = temp; //put next block in file in array
@@ -105,7 +105,7 @@ void Defragmenter::arToBlock(DiskBlock*** diskArray, DiskDrive* diskDrive, int a
 		yellowPages.insert(diskIx, newPos);
 	}
 	
-	diskDrive->writeDiskBlock(diskArray[arIx], diskIx); //write there
+	diskDrive->writeDiskBlock(*(diskArray[arIx]), diskIx); //write there
 	delete diskArray[arIx]; //delete disk from RAM
 	diskDrive->FAT[diskIx] = true;
 }
