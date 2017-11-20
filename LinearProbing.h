@@ -32,7 +32,7 @@
             void insert( const HashedObj & key, const HashedObj & obj );
             void remove( const HashedObj & x );
 
-            const LinearHashTable & operator=( const LinearHashTable & rhs );
+            //const LinearHashTable & operator=( const LinearHashTable & rhs );
 
             enum EntryType { ACTIVE, EMPTY, DELETED };
           private:
@@ -56,6 +56,6 @@
             int hash( int key, int tableSize ) const;
             //void rehash( );
         };
-
-        //#include "LinearProbing.cpp"
+        template class LinearHashTable <int>;
+        #include "LinearProbing.cpp"
         #endif
