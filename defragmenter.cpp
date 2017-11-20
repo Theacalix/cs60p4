@@ -1,6 +1,7 @@
 #include "defragmenter.h"
 #include "DefragRunner.h"
 #include "mynew.h"
+#include <cstdlib>
 
 Defragmenter::Defragmenter(DiskDrive *diskDrive)
 {
@@ -8,6 +9,7 @@ Defragmenter::Defragmenter(DiskDrive *diskDrive)
 	unsigned next;
 	int arIx = 0;
 	int diskIx = 2;
+	unsigned newPos;
 
 	next = diskDrive->directory[0].getFirstBlockID(); //look for beginning of each file
 		
@@ -24,15 +26,28 @@ Defragmenter::Defragmenter(DiskDrive *diskDrive)
 			if(diskDrive->FAT[diskIx]) //diskblock is full
 			{
 				//move diskblock to end of diskDrive, update hashtable 
-				unsigned newPos = findEmpty(diskDrive); //find last open space
-				DiskBlock* temp = readDiskBlock(diskIx); //get element 
-				writeDiskBlock(temp, newPos); //move to empty space 
-				delete *temp; //delete temp
+				try
+				{
+					newPos = findEmpty(diskDrive); //find last open space
+					if(newPos == 1)
+					{
+						throw 1;
+					}
+				}
+				catch(int e)
+				{
+					cout << "FAT full, out of space" << endl;
+					exit(0);
+				}
+
+				DiskBlock* temp = diskDrive->readDiskBlock(diskIx); //get element 
+				diskDrive->writeDiskBlock(temp, newPos); //move to empty space 
+				delete temp; //delete temp
 				//NEED TO STORE CHANGE IN HASH
 			}
 			
 			diskDrive->writeDiskBlock(diskArray[arIx], diskIx); //write there
-			delete *(diskArray[arIx]); //delete disk from RAM
+			delete diskArray[arIx]; //delete disk from RAM
 			diskDrive->FAT[diskIx] = true;
 		 
 			//move next end element in file to RAM
@@ -50,7 +65,7 @@ Defragmenter::Defragmenter(DiskDrive *diskDrive)
 } // Defragmenter()
 
 
-void blockToAr(DiskBlock*** diskArray, int pos, unsigned &next, DiskDrive *diskDrive)
+void Defragmenter::blockToAr(DiskBlock*** diskArray, int pos, unsigned &next, DiskDrive *diskDrive)
 {
 	DiskBlock* temp = diskDrive->readDiskBlock(next);
 	(*diskArray)[pos] = temp; //put next block in file in array
@@ -58,11 +73,12 @@ void blockToAr(DiskBlock*** diskArray, int pos, unsigned &next, DiskDrive *diskD
 	next = temp->getNext(); //get next block 
 } //moves next block in file to RAM
 
-unsigned findEmpty(DiskDrive* diskDrive)
+unsigned Defragmenter::findEmpty(DiskDrive* diskDrive)
 {
-	for(int i = diskDrive->getCapacity() - 1; i >= 0; i--)
+	/*for(int i = diskDrive->getCapacity() - 1; i >= 0; i--)
 	{
 		if(!diskDrive->FAT[i])
 			return i;
-	}
+	}*/
+	return 1;
 } //look from end of FAT to find empty disk space
