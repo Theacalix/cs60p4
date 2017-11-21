@@ -13,6 +13,7 @@ class Defragmenter
 	int next;
 	int arIx;
 	int diskIx;
+	unsigned maxFree;
 	void blockToAr(int pos);
 	void arToBlock(LinearHashTable <int> &yellowPages);
 	unsigned findEmpty();
