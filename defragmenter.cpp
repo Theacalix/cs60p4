@@ -14,7 +14,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	maxFree = diskDrive->getCapacity() -1;
 	int newNext;
 	int prevNext;
-	LinearHashTable <int> yellowPages(-1, 200000);
+	LinearHashTable <int> yellowPages(0, 200000);
 
 	maxFree = findEmpty();
 
@@ -23,12 +23,12 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	for(int i = 0; i < arSize && next != 1; i++) //loop through array and fill with ordered file
 	{
 		newNext = yellowPages.find(next);
-		if(newNext == -1) { //element is in original pos
+		if(newNext == 0) { //element is in original pos
 			blockToAr(i);
 		}
 		else //item got moved
 		{
-			while(newNext != -1) //check if moved multiple times
+			while(newNext != 0) //check if moved multiple times
 			{
 				prevNext = newNext;
 				newNext = yellowPages.find(prevNext);
@@ -78,20 +78,25 @@ void Defragmenter::blockToAr(int pos)
 	DiskBlock* temp = diskDrive->readDiskBlock(next);
 	diskArray[pos] = temp; //put next block in file in array
 	diskDrive->FAT[next] = false; //that block is now empty 
+	if(next > maxFree) //update maxFree
+		maxFree = next;
 	next = temp->getNext(); //get next block 
 } //moves next block in file to RAM
 
 void Defragmenter::arToBlock(LinearHashTable <int> &yellowPages)
 {
-	unsigned newPos;
 
 	if(diskDrive->FAT[diskIx]) //diskblock is full
 	{
 		//move diskblock to end of diskDrive, update hashtable 
+		DiskBlock* temp = diskDrive->readDiskBlock(diskIx); //get element 
+		diskDrive->writeDiskBlock(temp, maxFree); //move to empty space 
+		delete temp; //delete temp
+		yellowPages.insert(diskIx, maxFree); //store change in hash
 		try
 		{
-			newPos = findEmpty(); //find last open space
-			if(newPos == 1)
+			maxFree = findEmpty(); //find next empty space
+			if(maxFree == 1)
 			{
 				throw 1;
 			}
@@ -101,12 +106,6 @@ void Defragmenter::arToBlock(LinearHashTable <int> &yellowPages)
 			cout << "FAT full, out of space" << endl;
 			exit(0);
 		}
-
-		DiskBlock* temp = diskDrive->readDiskBlock(diskIx); //get element 
-		diskDrive->writeDiskBlock(temp, newPos); //move to empty space 
-		delete temp; //delete temp
-		//NEED TO STORE CHANGE IN HASH
-		yellowPages.insert(diskIx, newPos);
 	}
 	
 	diskDrive->writeDiskBlock(diskArray[arIx], diskIx); //write there

@@ -10,7 +10,7 @@ class Defragmenter
 {
 	DiskBlock** diskArray;
 	DiskDrive* diskDrive;
-	int next;
+	unsigned next;
 	int arIx;
 	int diskIx;
 	unsigned maxFree;
