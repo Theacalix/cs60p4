@@ -8,11 +8,16 @@
 
 class Defragmenter
 {
-	void blockToAr(DiskBlock*** diskArray, int pos, int &next, DiskDrive *diskDrive);
-	void arToBlock(DiskBlock*** diskArray, DiskDrive* diskDrive, int arIx, int diskIx, LinearHashTable <int> &yellowPages);
-	unsigned findEmpty(DiskDrive* diskDrive);
+	DiskBlock** diskArray;
+	DiskDrive* diskDrive;
+	int next;
+	int arIx;
+	int diskIx;
+	void blockToAr(int pos);
+	void arToBlock(LinearHashTable <int> &yellowPages);
+	unsigned findEmpty();
 public:
-	Defragmenter(DiskDrive *diskDrive);
+	Defragmenter(DiskDrive *dDrive);
 
 }; // class Defragmenter
 

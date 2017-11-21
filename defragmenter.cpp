@@ -4,13 +4,12 @@
 #include <cstdlib>
 #include "LinearProbing.h"
 
-Defragmenter::Defragmenter(DiskDrive *diskDrive)
+Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 {
 	int arSize = 5000;
-	DiskBlock** diskArray = new DiskBlock*[arSize];
-	int next;
-	int arIx = 0;
-	int diskIx = 2;
+	diskArray = new DiskBlock*[arSize];
+	arIx = 0;
+	diskIx = 2;
 	int newNext;
 	int prevNext;
 	LinearHashTable <int> yellowPages(-1, 200000);
@@ -21,7 +20,7 @@ Defragmenter::Defragmenter(DiskDrive *diskDrive)
 	{
 		newNext = yellowPages.find(next);
 		if(newNext == -1) { //element is in original pos
-			blockToAr(&diskArray, i, next, diskDrive);
+			blockToAr(i);
 		}
 		else //item got moved
 		{
@@ -31,7 +30,7 @@ Defragmenter::Defragmenter(DiskDrive *diskDrive)
 				newNext = yellowPages.find(prevNext);
 			}
 			next = prevNext;
-			blockToAr(&diskArray, i, next, diskDrive);
+			blockToAr(i);
 		}
 		
 	} 
@@ -41,10 +40,10 @@ Defragmenter::Defragmenter(DiskDrive *diskDrive)
 		while(next != 1) //move element to disk and grab next in file
 		{
 			//move next beginning element in file to diskdrive			 
-			arToBlock(&diskArray, diskDrive, arIx, diskIx, yellowPages);
+			arToBlock(yellowPages);
 		 
 			//move next end element in file to RAM
-			blockToAr(&diskArray, arIx, next, diskDrive);
+			blockToAr(arIx);
 			diskIx++;
 			if(arIx >= arSize)
 				arIx = 0;
@@ -61,23 +60,24 @@ Defragmenter::Defragmenter(DiskDrive *diskDrive)
 	//moved sorted last file from RAM to diskDrive
 	for(int i = 0; i < arSize; i++)
 	{
-		int pos = (arIx + i) % arSize;
-		arToBlock(&diskArray, diskDrive, pos, diskIx, yellowPages);
+		int pos = arIx;
+		arIx = (pos + i) % arSize;
+		arToBlock(yellowPages);
 		diskIx++;
 	}
 
 } // Defragmenter()
 
 
-void Defragmenter::blockToAr(DiskBlock*** diskArray, int pos, int &next, DiskDrive *diskDrive)
+void Defragmenter::blockToAr(int pos)
 {
 	DiskBlock* temp = diskDrive->readDiskBlock(next);
-	(*diskArray)[pos] = temp; //put next block in file in array
+	diskArray[pos] = temp; //put next block in file in array
 	diskDrive->FAT[next] = false; //that block is now empty 
 	next = temp->getNext(); //get next block 
 } //moves next block in file to RAM
 
-void Defragmenter::arToBlock(DiskBlock*** diskArray, DiskDrive* diskDrive, int arIx, int diskIx, LinearHashTable <int> &yellowPages)
+void Defragmenter::arToBlock(LinearHashTable <int> &yellowPages)
 {
 	unsigned newPos;
 
@@ -86,7 +86,7 @@ void Defragmenter::arToBlock(DiskBlock*** diskArray, DiskDrive* diskDrive, int a
 		//move diskblock to end of diskDrive, update hashtable 
 		try
 		{
-			newPos = findEmpty(diskDrive); //find last open space
+			newPos = findEmpty(); //find last open space
 			if(newPos == 1)
 			{
 				throw 1;
@@ -105,12 +105,12 @@ void Defragmenter::arToBlock(DiskBlock*** diskArray, DiskDrive* diskDrive, int a
 		yellowPages.insert(diskIx, newPos);
 	}
 	
-	diskDrive->writeDiskBlock(*(diskArray[arIx]), diskIx); //write there
+	diskDrive->writeDiskBlock(diskArray[arIx], diskIx); //write there
 	delete diskArray[arIx]; //delete disk from RAM
 	diskDrive->FAT[diskIx] = true;
 }
 
-unsigned Defragmenter::findEmpty(DiskDrive* diskDrive)
+unsigned Defragmenter::findEmpty()
 {
 	for(int i = diskDrive->getCapacity() - 1; i >= 0; i--)
 	{
