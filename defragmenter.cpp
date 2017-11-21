@@ -15,6 +15,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	int newNext;
 	int prevNext;
 	int fileNum = 0;
+	int maxArItem = arSize + 1; 
 	int totFiles = diskDrive->getNumFiles();
 	LinearHashTable <int> yellowPages(0, 200000);
 
@@ -44,6 +45,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 		{
 			if(fileNum == totFiles)
 			{
+				maxArItem = i; //tracks the largest intialized value in the array
 				break;
 			}
 			else
@@ -97,7 +99,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	for(int i = 0; i < arSize; i++)
 	{ 
 		arIx = (pos + i) % arSize; //this accounts for starting in the middle of the array and wrapping around to the beginning 
-		if(arIx >= diskDrive->getCapacity())
+		if(arIx > maxArItem) //checks to ensure not using uninitialized part of array 
 			break;
 		arToBlock(yellowPages);
 		diskIx++;
