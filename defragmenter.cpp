@@ -6,13 +6,17 @@
 
 Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 {
+	
 	int arSize = 5000;
 	diskArray = new DiskBlock*[arSize];
 	arIx = 0;
 	diskIx = 2;
+	maxFree = diskDrive->getCapacity() -1;
 	int newNext;
 	int prevNext;
 	LinearHashTable <int> yellowPages(-1, 200000);
+
+	maxFree = findEmpty();
 
 	next = diskDrive->directory[0].getFirstBlockID(); //look for beginning of each file
 		
@@ -112,7 +116,7 @@ void Defragmenter::arToBlock(LinearHashTable <int> &yellowPages)
 
 unsigned Defragmenter::findEmpty()
 {
-	for(int i = diskDrive->getCapacity() - 1; i >= 0; i--)
+	for(int i = maxFree; i >= 0; i--)
 	{
 		if(!diskDrive->FAT[i])
 			return i;
