@@ -85,7 +85,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 			}
 
 			diskIx++;
-			(arIx++) % arSize; //keeps arIx within bounds of array
+			(++arIx) % arSize; //keeps arIx within bounds of array
 			
 		} //ran to end of file 
 		if(i < totFiles)
