@@ -7,7 +7,7 @@
 Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 {
 	
-	int arSize = 5000;
+	int arSize = 10;
 	diskArray = new DiskBlock*[arSize];
 	arIx = 0;
 	diskIx = 2;
@@ -85,11 +85,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 			}
 
 			diskIx++;
-			if(arIx >= arSize)
-				arIx = 0;
-
-			else 
-				arIx++;
+			(arIx++) % arSize; //keeps arIx within bounds of array
 			
 		} //ran to end of file 
 		if(i < totFiles)
