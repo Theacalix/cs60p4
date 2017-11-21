@@ -93,9 +93,10 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 		}
 	}
 	//moved sorted last file from RAM to diskDrive
+	int pos = arIx;
 	for(int i = 0; i < arSize; i++)
 	{ 
-		arIx = (arIx + i) % arSize; //this accounts for starting in the middle of the array and wrapping around to the beginning 
+		arIx = (pos + i) % arSize; //this accounts for starting in the middle of the array and wrapping around to the beginning 
 		if(arIx >= diskDrive->getCapacity())
 			break;
 		arToBlock(yellowPages);
