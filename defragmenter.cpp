@@ -11,6 +11,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	diskArray = new DiskBlock*[arSize];
 	arIx = 0;
 	diskIx = 2;
+	inFCtr = 0;
 	maxFree = diskDrive->getCapacity() -1;
 	int newNext;
 	int prevNext;
@@ -20,7 +21,9 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	LinearHashTable <int> yellowPages(0, 200000);
 
 
-	next = diskDrive->directory[fileNum].getFirstBlockID(); //look for beginning of each file
+	next = diskDrive->directory[fileNum].getFirstBlockID(); //look for beginning of first file
+	diskDrive->directory[inFCtr].setFirstBlockID(2); //beginning is now 2, since it will be moved to that postition
+	inFCtr++;
 	fileNum++;
 
 	for(int i = 0; i < arSize; i++) //loop through array and fill with ordered file
@@ -146,6 +149,11 @@ void Defragmenter::arToBlock(LinearHashTable <int> &yellowPages)
 	diskDrive->writeDiskBlock(diskArray[arIx], diskIx); //write there
 	delete diskArray[arIx]; //delete disk from RAM
 	diskDrive->FAT[diskIx] = true;
+	if(diskArray[arIx]->getNext() == 1) //were at end of a file
+	{
+		diskDrive->directory[inFCtr].setFirstBlockID(diskIx + 1); //next block is beginning of next file
+		inFCtr++;
+	}
 }
 
 unsigned Defragmenter::findEmpty()
