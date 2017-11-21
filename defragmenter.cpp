@@ -14,15 +14,16 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	maxFree = diskDrive->getCapacity() -1;
 	int newNext;
 	int prevNext;
+	int fileNum = 0;
 	LinearHashTable <int> yellowPages(0, 200000);
 
-	maxFree = findEmpty();
 
-	next = diskDrive->directory[0].getFirstBlockID(); //look for beginning of each file
-		
-	for(int i = 0; i < arSize && next != 1; i++) //loop through array and fill with ordered file
+	next = diskDrive->directory[fileNums].getFirstBlockID(); //look for beginning of each file
+	fileNum++;
+
+	for(int i = 0; i < arSize; i++) //loop through array and fill with ordered file
 	{
-		newNext = yellowPages.find(next);
+		/*newNext = yellowPages.find(next);
 		if(newNext == 0) { //element is in original pos
 			blockToAr(i);
 		}
@@ -35,19 +36,41 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 			}
 			next = prevNext;
 			blockToAr(i);
-		}
-		
-	} 
+		}*/
+		blockToAr(i); //move block to file
 
-	for(int i = 1; i < diskDrive->getNumFiles() + 1; ++i) {
+		if(next == 1) //if end of file get next file 
+		{
+			next = diskDrive->directory[fileNum].getFirstBlockID();
+			fileNum++; //We don't need to check fileNum is less than the actual number of files because we have a lot of files in the diskBlock.
+		}
+	} 
+	//we're now swiss cheesed, so we'll find the hole in the diskBlock with the largest address.
+	maxFree = findEmpty();
+
+	for(int i = fileNum; i < diskDrive->getNumFiles() + 1; ++i) {
 
 		while(next != 1) //move element to disk and grab next in file
 		{
 			//move next beginning element in file to diskdrive			 
 			arToBlock(yellowPages);
 		 
-			//move next end element in file to RAM
-			blockToAr(arIx);
+			//move next end element in file to RAM, check yellowpages for moved
+			newNext = yellowPages.find(next);
+			if(newNext == 0) { //element is in original pos
+				blockToAr(arIx);
+			}
+			else //item got moved
+			{
+				while(newNext != 0) //check if moved multiple times
+				{
+					prevNext = newNext;
+					newNext = yellowPages.find(prevNext);
+				}
+				next = prevNext;
+				blockToAr(arIx);
+			}
+
 			diskIx++;
 			if(arIx >= arSize)
 				arIx = 0;
