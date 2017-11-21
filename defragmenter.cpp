@@ -19,7 +19,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	LinearHashTable <int> yellowPages(0, 200000);
 
 
-	next = diskDrive->directory[fileNums].getFirstBlockID(); //look for beginning of each file
+	next = diskDrive->directory[fileNum].getFirstBlockID(); //look for beginning of each file
 	fileNum++;
 
 	for(int i = 0; i < arSize; i++) //loop through array and fill with ordered file
@@ -87,16 +87,17 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 				arIx++;
 			
 		} //ran to end of file 
-		if(i < diskDrive->getNumFiles())
+		if(i < totFiles)
 		{
 			next = diskDrive->directory[i].getFirstBlockID(); //look for beginning of each file
 		}
 	}
 	//moved sorted last file from RAM to diskDrive
 	for(int i = 0; i < arSize; i++)
-	{
-		int pos = arIx;
-		arIx = (pos + i) % arSize;
+	{ 
+		arIx = (arIx + i) % arSize; //this accounts for starting in the middle of the array and wrapping around to the beginning 
+		if(arIx >= diskDrive->getCapacity())
+			break;
 		arToBlock(yellowPages);
 		diskIx++;
 	}
