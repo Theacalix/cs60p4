@@ -15,6 +15,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	int newNext;
 	int prevNext;
 	int fileNum = 0;
+	int totFiles = diskDrive->getNumFiles();
 	LinearHashTable <int> yellowPages(0, 200000);
 
 
@@ -41,14 +42,21 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 
 		if(next == 1) //if end of file get next file 
 		{
-			next = diskDrive->directory[fileNum].getFirstBlockID();
-			fileNum++; //We don't need to check fileNum is less than the actual number of files because we have a lot of files in the diskBlock.
+			if(fileNum == totFiles)
+			{
+				break;
+			}
+			else
+			{
+				next = diskDrive->directory[fileNum].getFirstBlockID();
+				fileNum++;
+			}
 		}
 	} 
 	//we're now swiss cheesed, so we'll find the hole in the diskBlock with the largest address.
 	maxFree = findEmpty();
 
-	for(int i = fileNum; i < diskDrive->getNumFiles() + 1; ++i) {
+	for(int i = fileNum; i < totFiles + 1; ++i) {
 
 		while(next != 1) //move element to disk and grab next in file
 		{
