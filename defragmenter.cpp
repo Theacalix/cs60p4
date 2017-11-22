@@ -2,7 +2,6 @@
 #include "DefragRunner.h"
 #include "mynew.h"
 #include <cstdlib>
-#include "LinearProbing.h"
 
 Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 {
@@ -18,8 +17,8 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	int fileNum = 0;
 	int maxArItem = arSize + 1; 
 	int totFiles = diskDrive->getNumFiles();
-	LinearHashTable <int> yellowPages(0, 200000);
-
+	//LinearHashTable <int> yellowPages(0, 200000);
+	yellowPages = new int[maxFree + 1];
 
 	next = diskDrive->directory[fileNum].getFirstBlockID(); //look for beginning of first file
 	diskDrive->directory[inFCtr].setFirstBlockID(2); //beginning is now 2, since it will be moved to that postition
@@ -66,10 +65,11 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 		while(next != 1) //move element to disk and grab next in file
 		{
 			//move next beginning element in file to diskdrive			 
-			arToBlock(yellowPages);
+			arToBlock();
 		 
 			//move next end element in file to RAM, check yellowpages for moved
-			newNext = yellowPages.find(next);
+			
+			newNext = yellowPages[next];
 			if(newNext == 0) { //element is in original pos
 				blockToAr(arIx);
 			}
@@ -78,7 +78,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 				while(newNext != 0) //check if moved multiple times
 				{
 					prevNext = newNext;
-					newNext = yellowPages.find(prevNext);
+					newNext = yellowPages[prevNext];
 				}
 				next = prevNext;
 				blockToAr(arIx);
@@ -100,7 +100,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 		arIx = (pos + i) % arSize; //this accounts for starting in the middle of the array and wrapping around to the beginning 
 		if(arIx > maxArItem) //checks to ensure not using uninitialized part of array 
 			break;
-		arToBlock(yellowPages);
+		arToBlock();
 		diskIx++;
 	}
 
@@ -117,7 +117,7 @@ void Defragmenter::blockToAr(int pos)
 	next = temp->getNext(); //get next block 
 } //moves next block in file to RAM
 
-void Defragmenter::arToBlock(LinearHashTable <int> &yellowPages)
+void Defragmenter::arToBlock()
 {
 
 	if(diskDrive->FAT[diskIx]) //diskblock is full
@@ -126,7 +126,7 @@ void Defragmenter::arToBlock(LinearHashTable <int> &yellowPages)
 		DiskBlock* temp = diskDrive->readDiskBlock(diskIx); //get element 
 		diskDrive->writeDiskBlock(temp, maxFree); //move to empty space 
 		delete temp; //delete temp
-		yellowPages.insert(diskIx, maxFree); //store change in hash
+		yellowPages[diskIx] = maxFree; //store change in hash
 		try
 		{
 			maxFree = findEmpty(); //find next empty space
