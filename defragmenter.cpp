@@ -1,6 +1,5 @@
 #include "defragmenter.h"
 #include "DefragRunner.h"
-#include "mynew.h"
 #include <cstdlib>
 
 Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
