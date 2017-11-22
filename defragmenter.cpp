@@ -144,13 +144,14 @@ void Defragmenter::arToBlock()
 	}
 	
 	diskDrive->writeDiskBlock(diskArray[arIx], diskIx); //write there
-	delete diskArray[arIx]; //delete disk from RAM
 	diskDrive->FAT[diskIx] = true;
 	if(diskArray[arIx]->getNext() == 1) //were at end of a file
 	{
 		diskDrive->directory[inFCtr].setFirstBlockID(diskIx + 1); //next block is beginning of next file
 		inFCtr++;
 	}
+	delete diskArray[arIx]; //delete disk from RAM
+
 }
 
 unsigned Defragmenter::findEmpty()
