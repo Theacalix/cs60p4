@@ -6,7 +6,7 @@
 Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 {
 	
-	int arSize = 10;
+	int arSize = 70;
 	diskArray = new DiskBlock*[arSize];
 	arIx = 0;
 	diskIx = 2;
