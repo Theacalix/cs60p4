@@ -6,19 +6,19 @@
 Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 {
 	
-	int arSize = 70;
+	int arSize = 50;
 	diskArray = new DiskBlock*[arSize];
 	arIx = 0;
 	diskIx = 2;
 	inFCtr = 0;
-	maxFree = diskDrive->getCapacity() + 2;
+	maxFree = diskDrive->getCapacity() + 1;
 	int newNext;
 	int prevNext;
 	int fileNum = 0;
 	int maxArItem = arSize + 1; 
 	int totFiles = diskDrive->getNumFiles();
 	//LinearHashTable <int> yellowPages(0, 200000);
-	yellowPages = new int[diskDrive->getCapacity()](); //make array and initialize to zero
+	yellowPages = new int[maxFree + 1](); //make array and initialize to zero
 
 	next = diskDrive->directory[fileNum].getFirstBlockID(); //look for beginning of first file
 	diskDrive->directory[inFCtr].setFirstBlockID(2); //beginning is now 2, since it will be moved to that postition
