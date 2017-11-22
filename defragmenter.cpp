@@ -6,7 +6,7 @@
 Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 {
 	
-	int arSize = 50;
+	int arSize = 5000;
 	diskArray = new DiskBlock*[arSize];
 	arIx = 0;
 	diskIx = 2;
@@ -16,7 +16,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	int prevNext;
 	int fileNum = 0;
 	int maxArItem = arSize + 1; 
-	int totFiles = diskDrive->getNumFiles();
+	totFiles = diskDrive->getNumFiles();
 	//LinearHashTable <int> yellowPages(0, 200000);
 	yellowPages = new int[maxFree + 1](); //make array and initialize to zero
 
@@ -145,7 +145,7 @@ void Defragmenter::arToBlock()
 	
 	diskDrive->writeDiskBlock(diskArray[arIx], diskIx); //write there
 	diskDrive->FAT[diskIx] = true;
-	if(diskArray[arIx]->getNext() == 1) //were at end of a file
+	if(diskArray[arIx]->getNext() == 1 && inFCtr < totFiles) //were at end of a file
 	{
 		diskDrive->directory[inFCtr].setFirstBlockID(diskIx + 1); //next block is beginning of next file
 		inFCtr++;
