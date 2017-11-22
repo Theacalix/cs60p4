@@ -14,6 +14,7 @@ class Defragmenter
 	int arIx;
 	int diskIx;
 	int inFCtr;
+	int totFiles;
 	unsigned maxFree;
 	void blockToAr(int pos);
 	void arToBlock();

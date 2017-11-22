@@ -6,7 +6,7 @@
 Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 {
 	
-	int arSize = 10;
+	int arSize = 5000;
 	diskArray = new DiskBlock*[arSize];
 	arIx = 0;
 	diskIx = 2;
@@ -16,7 +16,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	int prevNext;
 	int fileNum = 0;
 	int maxArItem = arSize + 1; 
-	int totFiles = diskDrive->getNumFiles();
+	totFiles = diskDrive->getNumFiles();
 	//LinearHashTable <int> yellowPages(0, 200000);
 	yellowPages = new int[maxFree + 1](); //make array and initialize to zero
 
