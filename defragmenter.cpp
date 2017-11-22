@@ -11,14 +11,14 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	arIx = 0;
 	diskIx = 2;
 	inFCtr = 0;
-	maxFree = diskDrive->getCapacity() -1;
+	maxFree = diskDrive->getCapacity();
 	int newNext;
 	int prevNext;
 	int fileNum = 0;
 	int maxArItem = arSize + 1; 
 	int totFiles = diskDrive->getNumFiles();
 	//LinearHashTable <int> yellowPages(0, 200000);
-	yellowPages = new int[maxFree + 1];
+	yellowPages = new int[maxFree];
 
 	next = diskDrive->directory[fileNum].getFirstBlockID(); //look for beginning of first file
 	diskDrive->directory[inFCtr].setFirstBlockID(2); //beginning is now 2, since it will be moved to that postition
@@ -125,6 +125,7 @@ void Defragmenter::arToBlock()
 		//move diskblock to end of diskDrive, update hashtable 
 		DiskBlock* temp = diskDrive->readDiskBlock(diskIx); //get element 
 		diskDrive->writeDiskBlock(temp, maxFree); //move to empty space 
+		diskDrive->FAT[maxFree] = true;
 		delete temp; //delete temp
 		yellowPages[diskIx] = maxFree; //store change in hash
 		try
@@ -154,7 +155,7 @@ void Defragmenter::arToBlock()
 
 unsigned Defragmenter::findEmpty()
 {
-	for(int i = maxFree; i >= 0; i--)
+	for(int i = maxFree -1; i >= 0; i--)
 	{
 		if(!diskDrive->FAT[i])
 			return i;
