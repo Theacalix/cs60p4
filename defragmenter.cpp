@@ -57,7 +57,11 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 		}
 	} 
 	//we're now swiss cheesed, so we'll find the hole in the diskBlock with the largest address.
-	maxFree = findEmpty();
+	//maxFree = findEmpty();
+	while(FAT[maxFree])
+	{
+		maxFree --;
+	}
 
 	for(int i = fileNum; i < totFiles + 1; ++i) {
 
@@ -127,7 +131,11 @@ void Defragmenter::arToBlock()
 		delete temp; //delete temp
 		diskDrive->FAT[maxFree] = true;
 		yellowPages[diskIx] = maxFree; //store change in hash
-		try
+		while(FAT[maxFree])
+		{
+			maxFree --;
+		}
+		/*try
 		{
 			maxFree = findEmpty(); //find next empty space
 			if(maxFree == 1)
@@ -139,7 +147,7 @@ void Defragmenter::arToBlock()
 		{
 			cout << "FAT full, out of space" << endl;
 			exit(0);
-		}
+		}*/
 	}
 	
 	diskDrive->writeDiskBlock(diskArray[arIx], diskIx); //write there
@@ -152,7 +160,7 @@ void Defragmenter::arToBlock()
 	delete diskArray[arIx]; //delete disk from RAM
 
 }
-
+/*
 unsigned Defragmenter::findEmpty()
 {
 	for(int i = maxFree; i >= 0; i--)
@@ -161,4 +169,4 @@ unsigned Defragmenter::findEmpty()
 			return i;
 	}
 	return 1;
-} //look from end of FAT to find empty disk space
+}*/ //look from end of FAT to find empty disk space
