@@ -17,7 +17,7 @@ class Defragmenter
 	unsigned maxFree;
 	void blockToAr(int pos);
 	void arToBlock();
-	//unsigned findEmpty();
+	void findEmpty();
 public:
 	Defragmenter(DiskDrive *dDrive);
 
