@@ -5,7 +5,7 @@
 Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 {
 	
-	int arSize = 5000;
+	int arSize = 11300;
 	diskArray = new DiskBlock*[arSize];
 	arIx = 0;
 	diskIx = 2;
@@ -58,7 +58,7 @@ Defragmenter::Defragmenter(DiskDrive *dDrive): diskDrive(dDrive)
 	} 
 	//we're now swiss cheesed, so we'll find the hole in the diskBlock with the largest address.
 	//maxFree = findEmpty();
-	while(FAT[maxFree])
+	while(diskDrive->FAT[maxFree])
 	{
 		maxFree --;
 	}
@@ -131,7 +131,7 @@ void Defragmenter::arToBlock()
 		delete temp; //delete temp
 		diskDrive->FAT[maxFree] = true;
 		yellowPages[diskIx] = maxFree; //store change in hash
-		while(FAT[maxFree])
+		while(diskDrive->FAT[maxFree])
 		{
 			maxFree --;
 		}
